@@ -13,18 +13,39 @@ void ler_pontos(Grafo* grafo, const char* arquivo_pontos) {
         exit(1);
     }
 
-    fscanf(fp, "%d", &grafo->num_pontos);  // Lê o número de pontos
-    grafo->pontos = (Ponto*)malloc(grafo->num_pontos * sizeof(Ponto));
+    // Lê o número de pontos
+    if (fscanf(fp, "%d", &grafo->num_pontos) != 1) {
+        printf("Erro: Numero de pontos invalido no arquivo.\n");
+        fclose(fp);
+        exit(1);
+    }
 
+    // Aloca memória para os pontos
+    grafo->pontos = (Ponto*)malloc(grafo->num_pontos * sizeof(Ponto));
+    if (!grafo->pontos) {
+        printf("Erro: Falha na alocaçao de memoria para os pontos.\n");
+        fclose(fp);
+        exit(1);
+    }
+
+    // Lê os pontos do arquivo
     for (int i = 0; i < grafo->num_pontos; i++) {
-        fscanf(fp, " %c", &grafo->pontos[i].id);
-        fscanf(fp, "%f %f", &grafo->pontos[i].x, &grafo->pontos[i].y);
-        fscanf(fp, " %[^\n]", grafo->pontos[i].rua1);
-        fscanf(fp, " %[^\n]", grafo->pontos[i].rua2);
+        if (fscanf(fp, " %c %f %f %[^\n] %[^\n]", 
+                   &grafo->pontos[i].id, 
+                   &grafo->pontos[i].x, 
+                   &grafo->pontos[i].y, 
+                   grafo->pontos[i].rua1, 
+                   grafo->pontos[i].rua2) != 5) {
+            printf("Erro: Formato invalido para o ponto %d.\n", i + 1);
+            free(grafo->pontos);
+            fclose(fp);
+            exit(1);
+        }
     }
 
     fclose(fp);
 }
+
 
 // Função para ler os vizinhos do arquivo de texto
 void ler_vizinhos(Grafo* grafo, const char* arquivo_vizinhos) {
@@ -66,7 +87,7 @@ void ler_vizinhos(Grafo* grafo, const char* arquivo_vizinhos) {
 void salvar_grafo_binario(Grafo* grafo, const char* arquivo_saida) {
     FILE* fp = fopen(arquivo_saida, "wb");
     if (!fp) {
-        perror("Erro ao abrir arquivo binário");
+        perror("Erro ao abrir arquivo binario");
         exit(1);
     }
 
@@ -82,7 +103,7 @@ void salvar_grafo_binario(Grafo* grafo, const char* arquivo_saida) {
 void carregar_grafo_binario(Grafo* grafo, const char* arquivo_entrada) {
     FILE* fp = fopen(arquivo_entrada, "rb");
     if (!fp) {
-        perror("Erro ao abrir arquivo binário");
+        perror("Erro ao abrir arquivo binario");
         exit(1);
     }
 
